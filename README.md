@@ -17,6 +17,13 @@ God Agent Orchestrator
 
 Together they form a learning constellation.
 
+## System Modules
+Frontend → Next.js dashboard  
+API → Job endpoints  
+Worker → Background processing  
+Agents → Specialized AI modules  
+Database → Supabase/Postgres
+
 ---
 
 ## Vision
