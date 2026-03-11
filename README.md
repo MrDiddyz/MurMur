@@ -17,6 +17,10 @@ God Agent Orchestrator
 
 Together they form a learning constellation.
 
+## Run MurMur locally 
+npm install
+npm run dev
+
 ## System Modules
 Frontend → Next.js dashboard  
 API → Job endpoints  
