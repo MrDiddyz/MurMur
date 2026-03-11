@@ -1,18 +1,22 @@
-async function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+while (true) {
 
-async function run() {
-  console.log("MurMur worker started");
+  const job = await getNextJob()
 
-  while (true) {
-    console.log("MurMur is checking for jobs...");
-
-    // Senere kobler vi dette til Supabase queue
-    await sleep(3000);
+  if (!job) {
+    await sleep(2000)
+    continue
   }
-}
 
-run().catch((error) => {
-  console.error("Worker crashed:", error);
-});
+  if (job.kind === "research") {
+    await runResearchAgent(job)
+  }
+
+  if (job.kind === "summarize") {
+    await runSummarizeAgent(job)
+  }
+
+  if (job.kind === "council_vote") {
+    await runCouncil(job)
+  }
+
+}
