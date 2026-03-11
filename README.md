@@ -40,16 +40,32 @@ MurMur Cloud Terminal
 ---
 
 ## Architecture
+```mermaid
+flowchart TD
 
-God Agent  
-↓  
-Agent Council  
-↓  
-Specialized Agents  
-↓  
-Knowledge Graph  
+User[User] --> UI[Frontend Dashboard]
 
----
+UI --> API[API Layer]
+
+API --> Orchestrator[God Agent / Orchestrator]
+
+Orchestrator --> Council[Agent Council]
+
+Council --> Research[Research Agent]
+Council --> Analyst[Analyst Agent]
+Council --> Builder[Builder Agent]
+Council --> Memory[Memory Agent]
+
+Research --> Worker[Worker Runtime]
+Analyst --> Worker
+Builder --> Worker
+
+Worker --> DB[(Database / Memory)]
+
+DB --> UI
+```
+
+
 
 ## Goal
 
