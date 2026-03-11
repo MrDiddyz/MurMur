@@ -75,6 +75,40 @@ Worker --> DB[(Database / Memory)]
 
 DB --> UI
 ```
+## 🧭 MurMur System Diagram
+
+```mermaid
+flowchart LR
+
+User[Creator]
+
+User --> Studio[Creator Studio]
+
+Studio --> WorksDB[(Works Database)]
+
+Studio --> Council
+
+subgraph MurMur Council Engine
+CreatorAgent[Creator Agent]
+CriticAgent[Critic Agent]
+CuratorAgent[Curator Agent]
+MarketAgent[Market Agent]
+StewardAgent[Steward Agent]
+end
+
+Council --> CreatorAgent
+CreatorAgent --> CriticAgent
+CriticAgent --> CuratorAgent
+CuratorAgent --> MarketAgent
+MarketAgent --> StewardAgent
+
+StewardAgent --> Decision[Decision Artifact]
+
+Decision --> Artifacts[(Artifacts Database)]
+
+Artifacts --> UI[Council UI]
+
+UI --> User
 
 
 
