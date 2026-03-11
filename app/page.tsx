@@ -1,101 +1,117 @@
-import { supabaseAdmin } from "@/lib/supabase-admin";
-import { z } from "zod";
+import { JobRow } from "@/lib/types";
 
-const createJobSchema = z.object({
-  kind: z.enum(["research", "summarize", "council_vote"]),
-  payload: z.record(z.string(), z.unknown()).default({}),
-});
+async function getJobs(): Promise<JobRow[]> {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-function normalizeBody(input: unknown) {
-  return createJobSchema.parse(input);
-}
-
-export async function GET() {
-  const { data, error } = await supabaseAdmin
-    .from("jobs")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(50);
-
-  if (error) {
-    return Response.json(
-      { ok: false, error: error.message },
-      { status: 500 }
-    );
-  }
-
-  return Response.json({
-    ok: true,
-    jobs: data,
+  const res = await fetch(`${baseUrl}/api/jobs`, {
+    cache: "no-store",
   });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch jobs");
+  }
+
+  const data = await res.json();
+  return data.jobs ?? [];
 }
 
-export async function POST(req: Request) {
-  try {
-    const contentType = req.headers.get("content-type") ?? "";
-    let rawBody: unknown;
+export default async function JobsPage() {
+  const jobs = await getJobs();
 
-    if (contentType.includes("application/json")) {
-      rawBody = await req.json();
-    } else if (
-      contentType.includes("application/x-www-form-urlencoded") ||
-      contentType.includes("multipart/form-data")
-    ) {
-      const formData = await req.formData();
-      rawBody = {
-        kind: String(formData.get("kind") ?? "research"),
-        payload: {
-          prompt: String(formData.get("prompt") ?? ""),
-        },
-      };
-    } else {
-      return Response.json(
-        { ok: false, error: "Unsupported content type" },
-        { status: 415 }
-      );
-    }
+  return (
+    <main style={{ padding: 24, display: "grid", gap: 20 }}>
+      <div>
+        <h1>MurMur Jobs</h1>
+        <p>Queue-ready job list from Supabase.</p>
+      </div>
 
-    const body = normalizeBody(rawBody);
+      <form
+        action="/api/jobs"
+        method="post"
+        style={{
+          display: "grid",
+          gap: 12,
+          maxWidth: 720,
+          padding: 16,
+          border: "1px solid #2a2a35",
+          borderRadius: 12,
+          background: "#12121a",
+        }}
+      >
+        <label>
+          <div>Kind</div>
+          <select
+            name="kind"
+            defaultValue="research"
+            style={{ width: "100%", padding: 10, marginTop: 6 }}
+          >
+            <option value="research">research</option>
+            <option value="summarize">summarize</option>
+            <option value="council_vote">council_vote</option>
+          </select>
+        </label>
 
-    const { data, error } = await supabaseAdmin
-      .from("jobs")
-      .insert({
-        kind: body.kind,
-        payload: body.payload,
-        status: "queued",
-      })
-      .select("*")
-      .single();
+        <label>
+          <div>Prompt</div>
+          <textarea
+            name="prompt"
+            rows={5}
+            defaultValue="What should MurMur build next?"
+            style={{ width: "100%", padding: 10, marginTop: 6 }}
+          />
+        </label>
 
-    if (error) {
-      return Response.json(
-        { ok: false, error: error.message },
-        { status: 500 }
-      );
-    }
+        <button
+          type="submit"
+          style={{
+            padding: 12,
+            borderRadius: 10,
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          Create Job
+        </button>
+      </form>
 
-    const wantsRedirect =
-      contentType.includes("application/x-www-form-urlencoded") ||
-      contentType.includes("multipart/form-data");
+      <div style={{ display: "grid", gap: 12 }}>
+        {jobs.map((job) => (
+          <div
+            key={job.id}
+            style={{
+              border: "1px solid #2a2a35",
+              borderRadius: 12,
+              padding: 16,
+              background: "#12121a",
+            }}
+          >
+            <div><strong>ID:</strong> {job.id}</div>
+            <div><strong>Kind:</strong> {job.kind}</div>
+            <div><strong>Status:</strong> {job.status}</div>
+            <div>
+              <strong>Created:</strong>{" "}
+              {new Date(job.created_at).toLocaleString()}
+            </div>
 
-    if (wantsRedirect) {
-      return Response.redirect(new URL("/jobs", req.url), 303);
-    }
+            {job.payload && (
+              <pre style={{ whiteSpace: "pre-wrap", marginTop: 12 }}>
+                {JSON.stringify(job.payload, null, 2)}
+              </pre>
+            )}
 
-    return Response.json(
-      {
-        ok: true,
-        job: data,
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Invalid request body";
+            {job.result && (
+              <pre style={{ whiteSpace: "pre-wrap", marginTop: 12 }}>
+                {JSON.stringify(job.result, null, 2)}
+              </pre>
+            )}
 
-    return Response.json(
-      { ok: false, error: message },
-      { status: 400 }
-    );
-  }
+            {job.error && (
+              <div style={{ color: "#ff8f8f", marginTop: 8 }}>{job.error}</div>
+            )}
+          </div>
+        ))}
+      </div>
+    </main>
+  );
 }
