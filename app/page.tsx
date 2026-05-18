@@ -103,9 +103,9 @@ export default async function JobsPage({
     getJobs(queryString),
     getAnalytics(queryString),
   ]);
-  const maxThroughput = Math.max(
-    1,
-    ...analytics.throughputOverTime.map((entry) => entry.count)
+  const maxThroughput = analytics.throughputOverTime.reduce(
+    (max, entry) => Math.max(max, entry.count),
+    1
   );
 
   return (

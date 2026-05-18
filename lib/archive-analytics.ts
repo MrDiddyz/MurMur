@@ -3,6 +3,7 @@ import { JobKind, JobRow } from "@/lib/types";
 type CountByKey = Record<string, number>;
 // Keep enough context for grouping similar failures while avoiding oversized labels.
 const MAX_ERROR_MESSAGE_LENGTH = 140;
+const MILLISECONDS_PER_DAY = 86400000;
 
 function increment(target: CountByKey, key: string, value = 1) {
   target[key] = (target[key] ?? 0) + value;
@@ -40,7 +41,7 @@ function toUtcWeek(dateInput: string): string {
   const date = parseDateSafe(dateInput);
   if (!date) return "invalid_week";
   const firstJan = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-  const dayOfYear = Math.floor((date.getTime() - firstJan.getTime()) / 86400000) + 1;
+  const dayOfYear = Math.floor((date.getTime() - firstJan.getTime()) / MILLISECONDS_PER_DAY) + 1;
   const week = Math.ceil(dayOfYear / 7);
   return `${date.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
 }

@@ -26,7 +26,12 @@ function getRangeStart(range: TimeRange): string | undefined {
 
   const now = new Date();
   const next = new Date(now);
-  const days = range === "7d" ? 7 : range === "30d" ? 30 : 90;
+  const rangeToDays: Record<Exclude<TimeRange, "all">, number> = {
+    "7d": 7,
+    "30d": 30,
+    "90d": 90,
+  };
+  const days = rangeToDays[range];
   next.setUTCDate(next.getUTCDate() - days);
   return next.toISOString();
 }
