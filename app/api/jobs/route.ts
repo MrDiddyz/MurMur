@@ -2,6 +2,8 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getArchiveFilters, getCreatedAtBounds } from "@/lib/archive-filters";
 import { z } from "zod";
 
+const MAX_JOBS_PER_REQUEST = 200;
+
 const createJobSchema = z.object({
   kind: z.enum(["research", "summarize", "council_vote"]),
   payload: z.record(z.string(), z.unknown()).default({}),
@@ -25,7 +27,7 @@ export async function GET(req: Request) {
 
   const { data, error } = await query
     .order("created_at", { ascending: false })
-    .limit(200);
+    .limit(MAX_JOBS_PER_REQUEST);
 
   if (error) {
     return Response.json(

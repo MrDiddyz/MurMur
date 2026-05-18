@@ -1,6 +1,7 @@
 import { JobKind, JobRow } from "@/lib/types";
 
 type CountByKey = Record<string, number>;
+// Keep enough context for grouping similar failures while avoiding oversized labels.
 const MAX_ERROR_MESSAGE_LENGTH = 140;
 
 function increment(target: CountByKey, key: string, value = 1) {
