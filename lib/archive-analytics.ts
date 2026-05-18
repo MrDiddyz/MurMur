@@ -84,8 +84,8 @@ export function computeArchiveAnalytics(jobs: JobRow[]) {
   };
   const completionDurationByDay: Record<string, { sum: number; count: number }> = {};
 
-  let durationSumMs = 0;
-  let durationCount = 0;
+  let totalDurationMs = 0;
+  let completedJobCount = 0;
 
   for (const job of jobs) {
     increment(jobsByType, job.kind);
@@ -112,8 +112,8 @@ export function computeArchiveAnalytics(jobs: JobRow[]) {
 
     const durationMs = getDurationMs(job);
     if (durationMs !== null) {
-      durationSumMs += durationMs;
-      durationCount += 1;
+      totalDurationMs += durationMs;
+      completedJobCount += 1;
 
       const completionDay = toUtcDay(job.finished_at!);
       const entry = completionDurationByDay[completionDay] ?? { sum: 0, count: 0 };
@@ -139,7 +139,9 @@ export function computeArchiveAnalytics(jobs: JobRow[]) {
     totalJobs,
     successRate: percent(doneCount, totalJobs),
     failureRate: percent(failedCount, totalJobs),
-    averageProcessingMs: durationCount ? Number((durationSumMs / durationCount).toFixed(0)) : 0,
+    averageProcessingMs: completedJobCount
+      ? Number((totalDurationMs / completedJobCount).toFixed(0))
+      : 0,
     jobsByType,
     jobsByDay: topEntries(jobsByDay, 30).sort((a, b) => a.label.localeCompare(b.label)),
     jobsByWeek: topEntries(jobsByWeek, 20).sort((a, b) => a.label.localeCompare(b.label)),
