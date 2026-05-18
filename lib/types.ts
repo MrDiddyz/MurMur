@@ -12,3 +12,13 @@ export interface JobRow {
   started_at: string | null;
   finished_at: string | null;
 }
+
+export type TimeRange = "7d" | "30d" | "90d" | "all";
+
+export interface ArchiveFilters {
+  kind?: JobKind;
+  status?: JobStatus;
+  range?: TimeRange;
+  from?: string;
+  to?: string;
+}
