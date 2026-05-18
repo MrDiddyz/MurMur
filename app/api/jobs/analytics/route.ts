@@ -3,6 +3,7 @@ import { getArchiveFilters, getCreatedAtBounds } from "@/lib/archive-filters";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { JobRow } from "@/lib/types";
 
+// Bound analytics reads to keep response times stable for the dashboard.
 const MAX_ANALYTICS_RECORDS = 2000;
 
 export async function GET(req: Request) {

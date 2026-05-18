@@ -13,7 +13,7 @@ const filtersSchema = z.object({
   to: z.string().optional(),
 });
 
-function parseDate(input: string | undefined): string | undefined {
+function parseAndNormalizeDateToISO(input: string | undefined): string | undefined {
   if (!input) return undefined;
 
   const parsed = new Date(input);
@@ -43,8 +43,8 @@ export function getArchiveFilters(url: URL): ArchiveFilters {
   const kind = raw.kind && raw.kind !== "all" ? kindSchema.safeParse(raw.kind) : null;
   const status = raw.status && raw.status !== "all" ? statusSchema.safeParse(raw.status) : null;
   const range = raw.range ? rangeSchema.safeParse(raw.range) : null;
-  const from = parseDate(raw.from);
-  const to = parseDate(raw.to);
+  const from = parseAndNormalizeDateToISO(raw.from);
+  const to = parseAndNormalizeDateToISO(raw.to);
 
   return {
     kind: kind?.success ? (kind.data as JobKind) : undefined,

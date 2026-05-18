@@ -86,7 +86,7 @@ async function getAnalytics(queryString: string): Promise<AnalyticsResponse["ana
   return data.analytics;
 }
 
-function formatMsAsSeconds(ms: number): string {
+function formatDuration(ms: number): string {
   return `${(ms / 1000).toFixed(2)}s`;
 }
 
@@ -247,7 +247,7 @@ export default async function JobsPage({
         </div>
         <div style={{ border: "1px solid #2a2a35", borderRadius: 12, padding: 16, background: "#12121a" }}>
           <div>Avg Processing Time</div>
-          <h2>{formatMsAsSeconds(analytics.averageProcessingMs)}</h2>
+          <h2>{formatDuration(analytics.averageProcessingMs)}</h2>
         </div>
       </section>
 

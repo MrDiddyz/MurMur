@@ -24,13 +24,20 @@ function getDurationMs(job: JobRow): number | null {
   return finishedAt - startedAt;
 }
 
+function parseDateSafe(value: string): Date | null {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function toUtcDay(dateInput: string): string {
-  const date = new Date(dateInput);
+  const date = parseDateSafe(dateInput);
+  if (!date) return "invalid_date";
   return date.toISOString().split("T")[0];
 }
 
 function toUtcWeek(dateInput: string): string {
-  const date = new Date(dateInput);
+  const date = parseDateSafe(dateInput);
+  if (!date) return "invalid_week";
   const firstJan = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
   const dayOfYear = Math.floor((date.getTime() - firstJan.getTime()) / 86400000) + 1;
   const week = Math.ceil(dayOfYear / 7);
