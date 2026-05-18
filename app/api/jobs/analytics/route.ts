@@ -3,6 +3,8 @@ import { getArchiveFilters, getCreatedAtBounds } from "@/lib/archive-filters";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { JobRow } from "@/lib/types";
 
+const MAX_ANALYTICS_RECORDS = 2000;
+
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const filters = getArchiveFilters(url);
@@ -17,7 +19,9 @@ export async function GET(req: Request) {
   if (bounds.from) query = query.gte("created_at", bounds.from);
   if (bounds.to) query = query.lte("created_at", bounds.to);
 
-  const { data, error } = await query.order("created_at", { ascending: false }).limit(2000);
+  const { data, error } = await query
+    .order("created_at", { ascending: false })
+    .limit(MAX_ANALYTICS_RECORDS);
 
   if (error) {
     return Response.json(

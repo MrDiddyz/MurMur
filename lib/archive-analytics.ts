@@ -1,6 +1,7 @@
 import { JobKind, JobRow } from "@/lib/types";
 
 type CountByKey = Record<string, number>;
+const MAX_ERROR_MESSAGE_LENGTH = 140;
 
 function increment(target: CountByKey, key: string, value = 1) {
   target[key] = (target[key] ?? 0) + value;
@@ -25,7 +26,7 @@ function getDurationMs(job: JobRow): number | null {
 
 function toUtcDay(dateInput: string): string {
   const date = new Date(dateInput);
-  return date.toISOString().slice(0, 10);
+  return date.toISOString().split("T")[0];
 }
 
 function toUtcWeek(dateInput: string): string {
@@ -97,7 +98,7 @@ export function computeArchiveAnalytics(jobs: JobRow[]) {
     }
 
     if (job.error) {
-      increment(errorCounts, job.error.slice(0, 140));
+      increment(errorCounts, job.error.slice(0, MAX_ERROR_MESSAGE_LENGTH));
       const pattern = getRetryPattern(job.error);
       if (pattern) increment(retryPatternCounts, pattern);
     }

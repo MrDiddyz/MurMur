@@ -1,6 +1,6 @@
 import { JobKind, JobRow, JobStatus, TimeRange } from "@/lib/types";
 
-type SearchParamsInput = {
+type PageSearchParams = {
   [key: string]: string | string[] | undefined;
 };
 
@@ -27,7 +27,7 @@ function normalizeParam(value: string | string[] | undefined): string | undefine
   return Array.isArray(value) ? value[0] : value;
 }
 
-function getActiveFilters(params: SearchParamsInput) {
+function getActiveFilters(params: PageSearchParams) {
   return {
     kind: normalizeParam(params.kind) ?? "all",
     status: normalizeParam(params.status) ?? "all",
@@ -86,14 +86,14 @@ async function getAnalytics(queryString: string): Promise<AnalyticsResponse["ana
   return data.analytics;
 }
 
-function msToSeconds(ms: number): string {
+function formatMsAsSeconds(ms: number): string {
   return `${(ms / 1000).toFixed(2)}s`;
 }
 
 export default async function JobsPage({
   searchParams,
 }: {
-  searchParams?: Promise<SearchParamsInput>;
+  searchParams?: Promise<PageSearchParams>;
 }) {
   const params = (await searchParams) ?? {};
   const filters = getActiveFilters(params);
@@ -247,7 +247,7 @@ export default async function JobsPage({
         </div>
         <div style={{ border: "1px solid #2a2a35", borderRadius: 12, padding: 16, background: "#12121a" }}>
           <div>Avg Processing Time</div>
-          <h2>{msToSeconds(analytics.averageProcessingMs)}</h2>
+          <h2>{formatMsAsSeconds(analytics.averageProcessingMs)}</h2>
         </div>
       </section>
 
