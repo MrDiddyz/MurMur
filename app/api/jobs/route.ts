@@ -1,5 +1,8 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { getArchiveFilters, getCreatedAtBounds } from "@/lib/archive-filters";
 import { z } from "zod";
+
+const MAX_JOBS_PER_REQUEST = 200;
 
 const createJobSchema = z.object({
   kind: z.enum(["research", "summarize", "council_vote"]),
@@ -10,12 +13,21 @@ function normalizeBody(input: unknown) {
   return createJobSchema.parse(input);
 }
 
-export async function GET() {
-  const { data, error } = await supabaseAdmin
-    .from("jobs")
-    .select("*")
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const filters = getArchiveFilters(url);
+  const bounds = getCreatedAtBounds(filters);
+
+  let query = supabaseAdmin.from("jobs").select("*");
+
+  if (filters.kind) query = query.eq("kind", filters.kind);
+  if (filters.status) query = query.eq("status", filters.status);
+  if (bounds.from) query = query.gte("created_at", bounds.from);
+  if (bounds.to) query = query.lte("created_at", bounds.to);
+
+  const { data, error } = await query
     .order("created_at", { ascending: false })
-    .limit(50);
+    .limit(MAX_JOBS_PER_REQUEST);
 
   if (error) {
     return Response.json(
@@ -79,7 +91,7 @@ export async function POST(req: Request) {
       contentType.includes("multipart/form-data");
 
     if (wantsRedirect) {
-      return Response.redirect(new URL("/jobs", req.url), 303);
+      return Response.redirect(new URL("/", req.url), 303);
     }
 
     return Response.json(
